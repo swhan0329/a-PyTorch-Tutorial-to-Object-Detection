@@ -15,7 +15,7 @@
 본 튜토리얼은 PyTorch와 convolutional neural networks (CNNs)에 대해 알고 있다고 가정합니다.
 만약 당신이 PyTorch를 처음 접한다면, [Deep Learning with PyTorch: A 60 Minute Blitz](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html)와 [Learning PyTorch with Examples](https://pytorch.org/tutorials/beginner/pytorch_with_examples.html)를 먼저 읽길 추천드립니다.
 
-질문과 제안 또는 정정은 issues에 적어주세요.
+질문이나 수정 사항 그리고 제안할 것이 있다면 issues에 적어주세요.
 본 튜토리얼은 `PyTorch 0.4`와 `Python 3.6`를 사용합니다.
 
 # Contents
