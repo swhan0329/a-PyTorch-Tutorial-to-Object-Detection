@@ -1,20 +1,17 @@
-This is a **[PyTorch](https://pytorch.org) Tutorial to Object Detection**.
-
-This is the third in [a series of tutorials](https://github.com/sgrvinod/Deep-Tutorials-for-PyTorch) I'm writing about _implementing_ cool models on your own with the amazing PyTorch library.
-
-Basic knowledge of PyTorch, convolutional neural networks is assumed.
-
-If you're new to PyTorch, first read [Deep Learning with PyTorch: A 60 Minute Blitz](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) and [Learning PyTorch with Examples](https://pytorch.org/tutorials/beginner/pytorch_with_examples.html).
-
-Questions, suggestions, or corrections can be posted as issues.
-
-I'm using `PyTorch 0.4` in `Python 3.6`.
-
 ---
-
-**27 Jan 2020**: Working code for two new tutorials has been added — [Super-Resolution](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Super-Resolution) and [Machine Translation](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Machine-Translation)
-
+19 Oct 2020
+안녕하세요, 꾸준히 성장하는 개발자 한서우입니다. 
+더 많은 한국 사람들이 object detection을 쉽게 공부할 수 있도록 잘 만들어져있는 PyTorch tutorial [원글(영어)](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#concepts)을 한국어로 번역하는 작업을 시작했습니다.
 ---
+이것은 **[PyTorch](https://pytorch.org) Tutorial to Object Detection** 한글 버전입니다.
+
+이 튜토리얼은 원작자의 [튜토리얼 시리즈](https://github.com/sgrvinod/Deep-Tutorials-for-PyTorch)의 3번째 시리즈입니다. 원작자는 현재 멋진 PyTorch 라이브러리를 사용하여 훌륭한 모델을 _구현_ 하는 방법에 대해 쓰고 있습니다.
+
+본 튜토리얼은 PyTorch와 convolutional neural networks (CNNs)에 대해 알고 있다고 가정합니다.
+만약 당신이 PyTorch를 처음 접한다면, [Deep Learning with PyTorch: A 60 Minute Blitz](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html)와 [Learning PyTorch with Examples](https://pytorch.org/tutorials/beginner/pytorch_with_examples.html)를 먼저 읽길 추천드립니다.
+
+질문과 제안 또는 정정은 issues에 적어주세요.
+본 튜토리얼은 `PyTorch 0.4`와 `Python 3.6`를 사용합니다.
 
 # Contents
 
@@ -34,17 +31,17 @@ I'm using `PyTorch 0.4` in `Python 3.6`.
 
 [***Frequently Asked Questions***](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#faqs)
 
-# Objective
+# 최종 목적
 
-**To build a model that can detect and localize specific objects in images.**
+**이미지 안에서 특정 물체들을 감지(detect)하고 위치화(localize)하는 모델을 만드는 것.**
 
 <p align="center">
 <img src="./img/baseball.gif">
 </p>
 
-We will be implementing the [Single Shot Multibox Detector (SSD)](https://arxiv.org/abs/1512.02325), a popular, powerful, and especially nimble network for this task. The authors' original implementation can be found [here](https://github.com/weiliu89/caffe/tree/ssd).
+우리는 유명하고, 강력하고, 특히 object detection에서 민첩한 네트워크인 [Single Shot Multibox Detector (SSD)](https://arxiv.org/abs/1512.02325)를 구현할 것입니다. SSD 저자들의 오리지날 구현은 [여기](https://github.com/weiliu89/caffe/tree/ssd)에서 확인하실 수 있습니다.
 
-Here are some examples of object detection in images not seen during training –
+몇 개의 object detection 예제입니다.
 
 ---
 
@@ -96,11 +93,11 @@ Here are some examples of object detection in images not seen during training �
 
 ---
 
-There are more examples at the [end of the tutorial](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#some-more-examples).
+더 많은 예제는 [튜토리얼 끝](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#some-more-examples)에서 확인하실 수 있습니다.
 
 ---
 
-# Concepts
+# 개념
 
 * **Object Detection**. duh.
 
@@ -116,52 +113,49 @@ There are more examples at the [end of the tutorial](https://github.com/sgrvinod
 
 * **Non-Maximum Suppression**. At any given location, multiple priors can overlap significantly. Therefore, predictions arising out of these priors could actually be duplicates of the same object. Non-Maximum Suppression (NMS) is a means to remove redundant predictions by suppressing all but the one with the maximum score.
 
-# Overview
+# 개요
 
-In this section, I will present an overview of this model. If you're already familiar with it, you can skip straight to the [Implementation](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#implementation) section or the commented code.
+이 파트에서 원작자는 구현할 모델의 개요를 보여줄 예정입니다. 만약 당신이 이 모델이 이미 익숙하다면, 당신은 바로 [구현](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#implementation) 파트나 주석이 달린 코드 넘어가면 됩니다. 
 
-As we proceed, you will notice that there's a fair bit of engineering that's resulted in the SSD's very specific structure and formulation. Don't worry if some aspects of it seem contrived or unspontaneous at first. Remember, it's built upon _years_ of (often empirical) research in this field.
+우리는 SSD에 매우 구체적인 구조(structure)와 공식이라는 약간의 있다는 것을 알 수 있습니다. 처음에 바로 이해되지 않아도 걱정하지마세요. SSD는 이 분야에서 _수 년간_ 의 연구 (가끔은 경험적)를 기반으로 한 거란 걸 기억하세요.
 
-### Some definitions
+### 정의
 
-A box is a box. A _bounding_ box is a box that wraps around an object i.e. represents its bounds.
+Box는 상자입니다. _Bounding_ box는 물체를 감싸고 있는 상자입니다. (예를 들어, 그 물체의 경계를 보여주는 상자)
 
-In this tutorial, we will encounter both types – just boxes and bounding boxes. But all boxes are represented on images and we need to be able to measure their positions, shapes, sizes, and other properties.
+이번 튜토리얼에서, 우리는 그냥 boxes와 bounding boxes 두 종류의 상자를 만나게 될 겁니다. 그러나 모든 상자는 이미지에 표시되며, 위치, 모양, 크기 그리고 다른 특성을 측정할 수 있어야 합니다.
 
-#### Boundary coordinates
+#### 경계 좌표(Boundary coordinates)
 
-The most obvious way to represent a box is by the pixel coordinates of the `x` and `y` lines that constitute its boundaries.
+Box를 표현할 때 가장 분명한 방법은 경계를 구성하는 `x`와 `y`선의 픽셀 좌표를 이용하는 것입니다.
 
 ![](./img/bc1.PNG)
 
-The boundary coordinates of a box are simply **`(x_min, y_min, x_max, y_max)`**.
-
-But pixel values are next to useless if we don't know the actual dimensions of the image.
-A better way would be to represent all coordinates is in their _fractional_ form.
-
+Box의 경계 좌표는 간단하게 **`(x_min, y_min, x_max, y_max)`** 로 표시됩니다.
+ 
+그러나 이미지의 크기를 모르는 경우에는 픽셀 값은 거의 쓸모 없습니다.
+더 좋은 방법은 모든 좌표를 _분수_ 형식으로 나타내는 것입니다.
 ![](./img/bc2.PNG)
 
-Now the coordinates are size-invariant and all boxes across all images are measured on the same scale.
+이제 좌표들은 크기에 불변(size-invariant)하고 다양한 이미지의 모든 상자(boxes)들은 같은 척도(scale)로 측정할 수 있습니다.
 
-#### Center-Size coordinates
+#### 중심 크기 좌표(Center-Size coordinates)
 
-This is a more explicit way of representing a box's position and dimensions.
+중심 크기 좌표는 상자의 위치와 크기를 나타내는 더 명확한 방법입니다.
 
 ![](./img/cs.PNG)
 
-The center-size coordinates of a box are **`(c_x, c_y, w, h)`**.
+상자의 중심 크기 좌표는 **`(c_x, c_y, w, h)`** 으로 표현합니다.
 
-In the code, you will find that we routinely use both coordinate systems depending upon their suitability for the task, and _always_ in their fractional forms.
+당신은 코드에서 우리가 작업(task)에 대한 적합성에 따라 _항상_ 분수 형식으로 두 좌표계를 자주 쓰는 것을 알 수 있습니다. 
 
 #### Jaccard Index
 
-The Jaccard Index or Jaccard Overlap or Intersection-over-Union (IoU) measure the **degree or extent to which two boxes overlap**.
+Jaccard Index나 Jaccard Overlap이나 Intersection-over-Union (IoU)는 **두 박스가 겹쳐진 정도나 범위** 를 측정합니다.
 
 ![](./img/jaccard.jpg)
 
-An IoU of `1` implies they are the _same_ box, while a value of `0` indicates they're mutually exclusive spaces.
-
-It's a simple metric, but also one that finds many applications in our model.
+IoU가 `1` 이면 두 박스는 _같은_ 박스임을 뜻하고, `0` 이면 상호 배타적인 공간임을 나타냅니다.
 
 ### Multibox
 
@@ -994,6 +988,6 @@ Redundant detections aren't really a problem since we're NMS-ing the hell out of
 
 ---
 
-__Sorry, but I gotta ask... _[what's in the boooox?!](https://cnet4.cbsistatic.com/img/cLD5YVGT9pFqx61TuMtcSBtDPyY=/570x0/2017/01/14/6d8103f7-a52d-46de-98d0-56d0e9d79804/se7en.png)___
+__미안하지만 물어볼게... _[what's in the boooox?!](https://cnet4.cbsistatic.com/img/cLD5YVGT9pFqx61TuMtcSBtDPyY=/570x0/2017/01/14/6d8103f7-a52d-46de-98d0-56d0e9d79804/se7en.png)___
 
 Ha.
