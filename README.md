@@ -1,8 +1,13 @@
 ---
+
 19 Oct 2020
+
 안녕하세요, 꾸준히 성장하는 개발자 한서우입니다. 
+
 더 많은 한국 사람들이 object detection을 쉽게 공부할 수 있도록 잘 만들어져있는 PyTorch tutorial [원글(영어)](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Object-Detection#concepts)을 한국어로 번역하는 작업을 시작했습니다.
+
 ---
+
 이것은 **[PyTorch](https://pytorch.org) Tutorial to Object Detection** 한글 버전입니다.
 
 이 튜토리얼은 원작자의 [튜토리얼 시리즈](https://github.com/sgrvinod/Deep-Tutorials-for-PyTorch)의 3번째 시리즈입니다. 원작자는 현재 멋진 PyTorch 라이브러리를 사용하여 훌륭한 모델을 _구현_ 하는 방법에 대해 쓰고 있습니다.
